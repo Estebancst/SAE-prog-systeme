@@ -1,9 +1,6 @@
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.io.*;
+import java.net.*;
 import java.util.Scanner;
 
 public class Client extends Thread{
@@ -13,12 +10,13 @@ public class Client extends Thread{
     public Client(String nomUT, String ip) {
         this.nomUT = nomUT;
     }
-    
+
 
     public void connectionServer(String ip, int numPort) throws UnknownHostException, IOException{
-        this.s = new Socket("127.0.0.1", 5555);
-        // Socket socket = new Socket(ip, numPort);        
+        // this.s = new Socket("127.0.0.1", 5555);
+        this.s = new Socket(ip, numPort);
     }
+
     public void quitServer() throws IOException{
         this.s.close();
     }
@@ -28,6 +26,7 @@ public class Client extends Thread{
         writer.println(message);
         writer.flush();
     }
+
     public void read() throws IOException{
         InputStreamReader stream  = new InputStreamReader(this.s.getInputStream());
         BufferedReader reader = new BufferedReader(stream);
@@ -37,6 +36,11 @@ public class Client extends Thread{
 
     @Override
     public void run() {
+        try {
+            this.connectionServer("172.28.88.22", 5555);
+            this.write("test");
+        } catch (Exception e) {
+            e.getStackTrace();
+        }
     }
-    
 }
