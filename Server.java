@@ -25,9 +25,9 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
 
                 // get the name of the client
-                // BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                // String name = in.readLine();
-                // BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String name = in.readLine();
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
                 // verify the name
                 // boolean nameVerified = verificationName(name, clientSocket, server.clientThreads);
@@ -56,8 +56,7 @@ public class Server {
                 // out.newLine();
                 // out.flush();
 
-                // System.out.println("New client connected: " + name);
-                String name = "test";
+                System.out.println("New client connected: " + name);
                 ClientThread thread = new ClientThread(name, clientSocket, server.clientThreads);
                 thread.start();
 
