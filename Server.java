@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.*;
 
 public class Server {
-    private Map<Socket, ClientThread> clientThreads;
+    private Map<Socket, ClientHandler> clientThreads;
     private List<Salon> salons;
 
     public Server() {
@@ -30,34 +30,34 @@ public class Server {
                 BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
                 // verify the name
-                // boolean nameVerified = verificationName(name, clientSocket, server.clientThreads);
-                // System.out.println("nameVerified: " + nameVerified);
-                // if (!nameVerified) {
-                //   out.write("This name is already taken, please choose another name");
-                //   out.newLine();
-                //   out.flush();
-                // }
+                boolean nameVerified = verificationName(name, clientSocket, server.clientThreads);
+                System.out.println("nameVerified: " + nameVerified);
+                if (!nameVerified) {
+                  out.write("This name is already taken, please choose another name");
+                  out.newLine();
+                  out.flush();
+                }
                 
-                // while (!nameVerified) {
-                //   name = in.readLine();
-                //   nameVerified = verificationName(name, clientSocket, server.clientThreads);
-                //   if (!nameVerified) {
-                //     out.write("This name is already taken, please choose another name");
-                //     out.newLine();
-                //     out.flush();
-                //   }
-                //   else {
-                //     nameVerified = true;
-                //   }
-                // }
+                while (!nameVerified) {
+                  name = in.readLine();
+                  nameVerified = verificationName(name, clientSocket, server.clientThreads);
+                  if (!nameVerified) {
+                    out.write("This name is already taken, please choose another name");
+                    out.newLine();
+                    out.flush();
+                  }
+                  else {
+                    nameVerified = true;
+                  }
+                }
 
                 // the name is verified, we can create the thread
-                // out.write("You are connected as " + name);
-                // out.newLine();
-                // out.flush();
+                out.write("You are connected as " + name);
+                out.newLine();
+                out.flush();
 
                 System.out.println("New client connected: " + name);
-                ClientThread thread = new ClientThread(name, clientSocket, server.clientThreads);
+                ClientHandler thread = new ClientHandler(name, clientSocket, server.clientThreads);
                 thread.start();
 
                 server.clientThreads.put(clientSocket, thread);
@@ -68,9 +68,8 @@ public class Server {
         }
     }
 
-    public static boolean verificationName(String name, Socket clientSocket, Map<Socket, ClientThread> clientThreads) throws IOException {
-
-      for (ClientThread c : clientThreads.values()) {
+    public static boolean verificationName(String name, Socket clientSocket, Map<Socket, ClientHandler> clientThreads) throws IOException {
+      for (ClientHandler c : clientThreads.values()) {
         if (name.equals(c.getUserName())) {
           return false;
         }

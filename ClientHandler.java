@@ -3,14 +3,14 @@ import java.net.*;
 import java.util.*;
 
 
-public class ClientThread extends Thread {
+public class ClientHandler extends Thread {
   private Socket clientSocket;
   private String username;
   private BufferedReader in;
   private BufferedWriter out;
-  private Map<Socket, ClientThread> clientThreads;
+  private Map<Socket, ClientHandler> clientThreads;
 
-  public ClientThread(String username, Socket clientSocket, Map<Socket, ClientThread> clientThreads) throws IOException {
+  public ClientHandler(String username, Socket clientSocket, Map<Socket, ClientHandler> clientThreads) throws IOException {
     this.username = username;
     this.clientSocket = clientSocket;
     this.clientThreads = clientThreads;
@@ -32,15 +32,15 @@ public class ClientThread extends Thread {
           this.sendPrivateMessage(this.username, message);
         }
         else {
-          for (ClientThread thread : clientThreads.values()) {
+          for (ClientHandler thread : clientThreads.values()) {
             if (thread != this) {
               thread.sendMessage(this.username, message);
             }
           }
         }
       }
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException | NullPointerException e) {
+      System.out.println("Client disconnected");
     }
   }
 
@@ -81,7 +81,7 @@ public class ClientThread extends Thread {
     }
     else if (message.equals("/users")) {
       String users = "";
-      for (ClientThread thread : clientThreads.values()) {
+      for (ClientHandler thread : clientThreads.values()) {
         users += thread.getUserName() + " ";
       }
       this.sendCommandMessage("Liste des utilisateurs connectés: " + users);
@@ -90,7 +90,7 @@ public class ClientThread extends Thread {
       this.sendCommandMessage("Le serveur est en ligne depuis " + System.currentTimeMillis() + " ms");
     }
     else if (message.equals("/help")) {
-      this.sendCommandMessage("Liste des commandes: /quit, /nbusers, /users, /uptime, /help");
+      this.sendCommandMessage("Commands list: @<username> <message>, /quit, /nbusers, /users, /uptime, /help");
     }
     else {
       this.sendCommandMessage("Unknown command");
@@ -104,10 +104,15 @@ public class ClientThread extends Thread {
     for (int i = 1; i < parts.length; i++) {
       msg += parts[i] + " ";
     }
-    for (ClientThread thread : clientThreads.values()) {
+    int cpt = 0;
+    for (ClientHandler thread : clientThreads.values()) {
       if (thread.getUserName().equals(user)) {
+        cpt ++;
         thread.sendMessage(userName, msg);
       }
+    }
+    if (cpt == 0) {
+      this.sendCommandMessage("User not found");
     }
   }
 }
