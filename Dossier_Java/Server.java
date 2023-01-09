@@ -23,57 +23,12 @@ public class Server {
             ServerSocket serverSocket = server.start(5555);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-
-                // get the name of the client
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                String name = in.readLine();
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-
-                // verify the name
-                boolean nameVerified = verificationName(name, clientSocket, server.clientThreads);
-                System.out.println("nameVerified: " + nameVerified);
-                if (!nameVerified) {
-                  out.write("This name is already taken, please choose another name");
-                  out.newLine();
-                  out.flush();
-                }
-                
-                while (!nameVerified) {
-                  name = in.readLine();
-                  nameVerified = verificationName(name, clientSocket, server.clientThreads);
-                  if (!nameVerified) {
-                    out.write("This name is already taken, please choose another name");
-                    out.newLine();
-                    out.flush();
-                  }
-                  else {
-                    nameVerified = true;
-                  }
-                }
-
-                // the name is verified, we can create the thread
-                out.write("You are connected as " + name);
-                out.newLine();
-                out.flush();
-
-                System.out.println("New client connected: " + name);
-                ClientHandler thread = new ClientHandler(name, clientSocket, server.clientThreads);
+                ClientHandler thread = new ClientHandler(clientSocket, server.clientThreads);
                 thread.start();
-
-                server.clientThreads.put(clientSocket, thread);
-                System.out.println("Client " + name + " added to the list of clients");
+                System.out.println("Client added to the list of clients");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static boolean verificationName(String name, Socket clientSocket, Map<Socket, ClientHandler> clientThreads) throws IOException {
-      for (ClientHandler c : clientThreads.values()) {
-        if (name.equals(c.getUserName())) {
-          return false;
-        }
-      }
-      return true;
     }
 }

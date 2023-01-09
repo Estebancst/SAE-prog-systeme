@@ -10,16 +10,17 @@ public class ClientHandler extends Thread {
   private BufferedWriter out;
   private Map<Socket, ClientHandler> clientThreads;
 
-  public ClientHandler(String username, Socket clientSocket, Map<Socket, ClientHandler> clientThreads) throws IOException {
-    this.username = username;
-    this.clientSocket = clientSocket;
-    this.clientThreads = clientThreads;
+  public ClientHandler(Socket clientSocket, Map<Socket, ClientHandler> clientThreads) throws IOException {
     this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
     this.out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+    this.clientSocket = clientSocket;
+    this.clientThreads = clientThreads;
+    
   }
 
   public void run() {
     try {
+      this.username = addUsername();
       while (true) {
 
         String message = this.in.readLine();
@@ -120,5 +121,50 @@ public class ClientHandler extends Thread {
     if (cpt == 0) {
       this.sendCommandMessage("User not found");
     }
+  }
+
+  public String addUsername() throws IOException {
+    // get the name of the client
+    
+    String name = in.readLine();
+
+    // verify the name
+    boolean nameVerified = verificationName(name);
+    if (!nameVerified) {
+      out.write("This name is already taken, please choose another name");
+      out.newLine();
+      out.flush();
+    }
+    
+    while (!nameVerified) {
+      name = in.readLine();
+      nameVerified = verificationName(name);
+      if (!nameVerified) {
+        out.write("This name is already taken, please choose another name");
+        out.newLine();
+        out.flush();
+      }
+      else {
+        nameVerified = true;
+      }
+    }
+
+    // the name is verified, we can create the thread
+    out.write("You are connected as " + name);
+    out.newLine();
+    out.flush();
+
+    this.clientThreads.put(this.clientSocket, this);
+    System.out.println("Client " + name + " added to the list of clients");
+    return name;
+  }
+
+  public boolean verificationName(String name) throws IOException {
+    for (ClientHandler c : this.clientThreads.values()) {
+      if (name.equals(c.getUserName())) {
+        return false;
+      }
+    }
+    return true;
   }
 }
