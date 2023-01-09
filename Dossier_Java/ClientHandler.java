@@ -93,6 +93,12 @@ public class ClientHandler extends Thread {
     else if (message.equals("/help")) {
       this.sendCommandMessage("Commands list: @<username> <message>, /quit, /nbusers, /users, /uptime, /help");
     }
+    else if (message.equals("/createsalon")){
+      String[] commande = message.split(" ");
+      Salon salon = new Salon(message);
+      this.sendCommandMessage("salon "+commande[1]+"created");
+      salon.ajouterClient(null);;
+    }
     else {
       this.sendCommandMessage("Unknown command");
     }
