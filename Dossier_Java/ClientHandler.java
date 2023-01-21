@@ -9,12 +9,16 @@ public class ClientHandler extends Thread {
   private BufferedReader in;
   private BufferedWriter out;
   private Map<Socket, ClientHandler> clientThreads;
+  private List<Salon> salons;
+  private Salon salonActuelle;
 
-  public ClientHandler(Socket clientSocket, Map<Socket, ClientHandler> clientThreads) throws IOException {
+  public ClientHandler(Socket clientSocket, Map<Socket, ClientHandler> clientThreads, List<Salon> salons, Salon salonActuelle) throws IOException {
     this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
     this.out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
     this.clientSocket = clientSocket;
     this.clientThreads = clientThreads;
+    this.salons = salons;
+    this.salonActuelle = salonActuelle;
     
   }
 
@@ -70,6 +74,7 @@ public class ClientHandler extends Thread {
   }
 
   public void getCommand(String message) {
+    String[] commande = message.split(" ");
     if (message.equals("/quit")) {
       try {
         this.clientSocket.close();
@@ -91,14 +96,39 @@ public class ClientHandler extends Thread {
       this.sendCommandMessage("Le serveur est en ligne depuis " + System.currentTimeMillis() + " ms");
     }
     else if (message.equals("/help")) {
-      this.sendCommandMessage("Commands list: @<username> <message>, /quit, /nbusers, /users, /uptime, /help");
+      this.sendCommandMessage("Commands list: @<username> <message>, /quit, /nbusers, /users, /uptime, /help, /create, /join");
     }
-    // else if (message.equals("/createsalon")){
-    //   String[] commande = message.split(" ");
-    //   Salon salon = new Salon(message);
-    //   this.sendCommandMessage("salon "+commande[1]+"created");
-    //   salon.ajouterClient(null);;
-    // }
+    else if(message.equals("/salons")){
+      for (Salon salon : salons) {
+        this.sendMessage(this.username, salon.getNom());
+      }
+    }
+    else if (commande[0].equals("/create")){
+      Salon salon = new Salon(commande[1]);
+      this.sendCommandMessage("salon "+commande[1]+" created");
+      for(Salon s : this.salons){
+        if(s.equals(this.salonActuelle)){
+          s.retirerClient(this.clientSocket, this);
+        }
+        if(s.equals(salon)){
+          s.ajouterClient(this.clientSocket, this);
+          this.salonActuelle = s;
+        }
+        System.out.println("nop");
+      }
+    }
+    else if(commande[0].equals("/join")){
+      String nomS = commande[1];
+      for(Salon s : this.salons){
+        if(!s.getNom().equals(nomS)){
+          s.retirerClient(this.clientSocket, this);
+        }
+        if(s.getNom().equals(nomS)){
+          s.ajouterClient(this.clientSocket, this);
+          this.salonActuelle = s;
+        }
+      }
+    }
     else {
       this.sendCommandMessage("Unknown command");
     }
