@@ -25,7 +25,7 @@ public class Server {
             ServerSocket serverSocket = server.start(5555);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                ClientHandler thread = new ClientHandler(clientSocket, server.clientThreads, server.salons, server.salons.get(0));
+                ClientHandler thread = new ClientHandler(clientSocket, salon.getClientThreads(), server.salons, server.salons.get(0));
                 thread.start();
                 System.out.println("Client added to the list of clients");
             }

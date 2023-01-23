@@ -8,6 +8,7 @@ public class Salon {
 
   public Salon(String nom) {
     this.nom = nom;
+    this.clientThreads = new HashMap<>();
   }
 
   public void ajouterClient(Socket socket, ClientHandler client) {
@@ -20,7 +21,7 @@ public class Salon {
         this.clientThreads.remove(socket);
       }
     }
-  }
+  } 
 
   @Override
   public String toString() {

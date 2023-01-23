@@ -104,34 +104,52 @@ public class ClientHandler extends Thread {
       }
     }
     else if (commande[0].equals("/create")){
+      
       Salon salon = new Salon(commande[1]);
-      this.sendCommandMessage("salon "+commande[1]+" created");
+      this.salons.add(salon);
+      this.sendCommandMessage("salon "+commande[1]+" created"+"\n");
       for(Salon s : this.salons){
         if(s.equals(this.salonActuelle)){
           s.retirerClient(this.clientSocket, this);
         }
         if(s.equals(salon)){
           s.ajouterClient(this.clientSocket, this);
-          this.salonActuelle = s;
+          this.salonActuelle = salon;
+          this.clientThreads = this.salonActuelle.getClientThreads();
         }
-        System.out.println("nop");
       }
     }
     else if(commande[0].equals("/join")){
       String nomS = commande[1];
-      for(Salon s : this.salons){
-        if(!s.getNom().equals(nomS)){
-          s.retirerClient(this.clientSocket, this);
+      if(!estSalon(nomS)){
+        for(Salon s : this.salons){
+          if(!s.getNom().equals(nomS)){
+            s.retirerClient(this.clientSocket, this);
+          }
+          if(s.getNom().equals(nomS)){
+            this.sendCommandMessage("salon "+commande[1]+" joined"+"\n");
+            s.ajouterClient(this.clientSocket, this);
+            this.salonActuelle = s;
+            this.clientThreads = s.getClientThreads();
+          }
         }
-        if(s.getNom().equals(nomS)){
-          s.ajouterClient(this.clientSocket, this);
-          this.salonActuelle = s;
-        }
+      }
+      else{
+        System.out.println("Salon "+commande[1]+" do not exist");
       }
     }
     else {
       this.sendCommandMessage("Unknown command");
     }
+  }
+
+  public boolean estSalon(String nomS){
+    Boolean res = false;
+    for(Salon s : this.salons){
+      if (s.getNom().equals(nomS))
+      res = true;
+    }
+    return res;
   }
 
   public void sendPrivateMessage(String userName, String message) {
