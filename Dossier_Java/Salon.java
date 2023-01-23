@@ -16,7 +16,7 @@ public class Salon {
   }
 
   public void retirerClient(Socket socket, ClientHandler client) {
-    for(Socket s : this.clientThreads.keySet()){
+    for(Socket s : new ArrayList<>(this.clientThreads.keySet())){
       if(s.equals(socket)){
         this.clientThreads.remove(socket);
       }

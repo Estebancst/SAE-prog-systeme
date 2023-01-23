@@ -10,15 +10,15 @@ public class ClientHandler extends Thread {
   private BufferedWriter out;
   private Map<Socket, ClientHandler> clientThreads;
   private List<Salon> salons;
-  private Salon salonActuelle;
+  private Salon salonActuel;
 
-  public ClientHandler(Socket clientSocket, Map<Socket, ClientHandler> clientThreads, List<Salon> salons, Salon salonActuelle) throws IOException {
+  public ClientHandler(Socket clientSocket, Map<Socket, ClientHandler> clientThreads, List<Salon> salons, Salon salonActuel) throws IOException {
     this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
     this.out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
     this.clientSocket = clientSocket;
     this.clientThreads = clientThreads;
     this.salons = salons;
-    this.salonActuelle = salonActuelle;
+    this.salonActuel = salonActuel;
     
   }
 
@@ -96,46 +96,62 @@ public class ClientHandler extends Thread {
       this.sendCommandMessage("Le serveur est en ligne depuis " + System.currentTimeMillis() + " ms");
     }
     else if (message.equals("/help")) {
-      this.sendCommandMessage("Commands list: @<username> <message>, /quit, /nbusers, /users, /uptime, /help, /create, /join");
+      String help = "";
+      help += "Commands list:" + "\n";
+      help += "@<username> <message> : envoie un message privé" + "\n";
+      help += "/quit : quitte le serveur" + "\n";
+      help += "/nbusers : affiche le nombre de utilisateurs connectés" + "\n";
+      help += "/users : affiche la liste des utilisateurs connectés" + "\n";
+      help += "/uptime : display the uptime of the server" + "\n";
+      help += "/help : affiche l'aide" + "\n";
+      help += "/create <salon> : crée un nouveau salon" + "\n";
+      help += "/join <salon> : rejoint le salon" + "\n";
+      help += "/salons : affiche la liste des salons" + "\n";
+      this.sendCommandMessage(help);
+      // this.sendCommandMessage("Commands list: @<username> <message>, /quit, /nbusers, /users, /uptime, /help, /create, /join, /salons");
     }
     else if(message.equals("/salons")){
+      this.sendCommandMessage("Liste des salons :");
       for (Salon salon : salons) {
-        this.sendMessage(this.username, salon.getNom());
+        this.sendCommandMessage(salon.getNom());
       }
     }
-    else if (commande[0].equals("/create")){
-      
-      Salon salon = new Salon(commande[1]);
-      this.salons.add(salon);
-      this.sendCommandMessage("salon "+commande[1]+" created"+"\n");
-      for(Salon s : this.salons){
-        if(s.equals(this.salonActuelle)){
-          s.retirerClient(this.clientSocket, this);
-        }
-        if(s.equals(salon)){
-          s.ajouterClient(this.clientSocket, this);
-          this.salonActuelle = salon;
-          this.clientThreads = this.salonActuelle.getClientThreads();
-        }
-      }
-    }
-    else if(commande[0].equals("/join")){
-      String nomS = commande[1];
-      if(!estSalon(nomS)){
-        for(Salon s : this.salons){
-          if(!s.getNom().equals(nomS)){
+    else if (commande[0].equals("/create")) {
+      if (estSalon(commande[1])) {
+        this.sendCommandMessage("Salon "+commande[1]+" already exist");
+      } else {
+        Salon salon = new Salon(commande[1]);
+        this.salons.add(salon);
+        this.sendCommandMessage("salon "+commande[1]+" created"+"\n");
+        for (Salon s : this.salons) {
+          if (s.equals(this.salonActuel)) {
             s.retirerClient(this.clientSocket, this);
           }
-          if(s.getNom().equals(nomS)){
+          if (s.equals(salon)) {
+            s.ajouterClient(this.clientSocket, this);
+            this.salonActuel = salon;
+            this.clientThreads = this.salonActuel.getClientThreads();
+          }
+        }
+      }
+    }
+    else if (commande[0].equals("/join")) {
+      String nomS = commande[1];
+      if (estSalon(nomS)) {
+        for (Salon s : this.salons) {
+          if (!s.getNom().equals(nomS)) {
+            s.retirerClient(this.clientSocket, this);
+          }
+          if (s.getNom().equals(nomS)) {
             this.sendCommandMessage("salon "+commande[1]+" joined"+"\n");
             s.ajouterClient(this.clientSocket, this);
-            this.salonActuelle = s;
+            this.salonActuel = s;
             this.clientThreads = s.getClientThreads();
           }
         }
       }
-      else{
-        System.out.println("Salon "+commande[1]+" do not exist");
+      else {
+        this.sendCommandMessage("Salon "+commande[1]+" does not exist");
       }
     }
     else {
@@ -143,11 +159,12 @@ public class ClientHandler extends Thread {
     }
   }
 
-  public boolean estSalon(String nomS){
+  public boolean estSalon(String nomS) {
     Boolean res = false;
-    for(Salon s : this.salons){
-      if (s.getNom().equals(nomS))
-      res = true;
+    for (Salon s : this.salons) {
+      if (s.getNom().equals(nomS)) {
+        return true;
+      }
     }
     return res;
   }
@@ -199,6 +216,8 @@ public class ClientHandler extends Thread {
 
     // the name is verified, we can create the thread
     out.write("You are connected as " + name);
+    out.newLine();
+    out.write("Entrez /help pour voir la liste des commandes");
     out.newLine();
     out.flush();
 
