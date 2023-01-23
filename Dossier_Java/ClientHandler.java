@@ -108,7 +108,6 @@ public class ClientHandler extends Thread {
       help += "/join <salon> : rejoint le salon" + "\n";
       help += "/salons : affiche la liste des salons" + "\n";
       this.sendCommandMessage(help);
-      // this.sendCommandMessage("Commands list: @<username> <message>, /quit, /nbusers, /users, /uptime, /help, /create, /join, /salons");
     }
     else if(message.equals("/salons")){
       this.sendCommandMessage("Liste des salons :");
