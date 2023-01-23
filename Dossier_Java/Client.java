@@ -8,10 +8,6 @@ public class Client{
     private BufferedReader in;
     private BufferedWriter out;
 
-    public Client(String nomUtilisateur) throws IOException {
-        this.nomUtilisateur = nomUtilisateur;
-    }
-
 
     public void connectionServer(String serverAdress, int port, Scanner scanner) throws UnknownHostException, IOException {
         this.socket = new Socket(serverAdress, port);
@@ -80,7 +76,7 @@ public class Client{
 
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
-        Client client = new Client("New user");
+        Client client = new Client();
         client.connectionServer("127.0.0.1", 5555, sc);
         client.start(sc);
 

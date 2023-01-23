@@ -4,19 +4,37 @@ import java.util.*;
 
 public class Salon {
   private String nom;
-  private List<Client> clients;
-  // private Map<> clients;
+  private Map<Socket, ClientHandler> clientThreads;
 
   public Salon(String nom) {
     this.nom = nom;
-    this.clients = new ArrayList<>();
+    this.clientThreads = new HashMap<>();
   }
 
-  public void ajouterClient(Client client) {
-    this.clients.add(client);
+  public void ajouterClient(Socket socket, ClientHandler client) {
+    this.clientThreads.put(socket, client);
   }
 
-  public void retirerClient(Client client) {
-    this.clients.remove(client);
+  public void retirerClient(Socket socket, ClientHandler client) {
+    for(Socket s : new ArrayList<>(this.clientThreads.keySet())){
+      if(s.equals(socket)){
+        this.clientThreads.remove(socket);
+      }
+    }
+  } 
+
+  @Override
+  public String toString() {
+    return "Salon : "+ this.nom +" avec " + this.clientThreads.size()+" utilisateurs";
   }
+
+  public String getNom() {
+    return nom;
+  }
+
+
+  public Map<Socket, ClientHandler> getClientThreads() {
+    return clientThreads;
+  }
+
 }
